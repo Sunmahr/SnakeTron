@@ -1,12 +1,11 @@
-# Example file showing a basic pygame "game loop"
 import pygame
 
 # pygame setup
 pygame.init()
 pygame.font.init()
-my_font = pygame.font.SysFont('Noto Serif Bold', 250)
+my_font = pygame.font.SysFont('Noto Serif Bold', 100)
 game_over_text = my_font.render('GAME OVER', True, "red")
-screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
+screen = pygame.display.set_mode((800, 600), pygame.RESIZABLE)
 clock = pygame.time.Clock()
 pygame.display.set_caption("Snake Tron")
 icon = pygame.image.load('images/motorbike.png')
@@ -39,6 +38,7 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        # pygame.KEYDOWN
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
                 directionX = -1
@@ -65,11 +65,13 @@ while running:
 
 
     # currentY = currentY + 2
-    # fill the screen with a color to wipe away anything from last frame
+    # fill the screen with a color
     screen.fill("black")
 
     if game_over:
-        draw_game_over(0,200)
+        x = (screen.get_width() - game_over_text.get_width()) / 2
+        y = (screen.get_height() - game_over_text.get_height()) / 2
+        draw_game_over(x,y)
     else:
         # Display player
         player(currentX, currentY)
