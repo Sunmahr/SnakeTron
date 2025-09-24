@@ -28,13 +28,15 @@ pygame.display.set_icon(icon)
 running = True
 game_over = False
 start = True
-startX = 50
+startX = screen.get_width() - 50 - player_icon.get_width()
 startY = 50
 currentX = startX
 currentY = startY
-directionX = 1
-directionY = 1
-moveX = True
+
+direction = pygame.K_LEFT
+half_height = player_icon.get_height() / 2
+half_width = player_icon.get_width() / 2
+list_positions = [[startX, startY+half_height]]
 
 
 def draw(object_to_draw, _x, _y):
@@ -48,27 +50,31 @@ while running:
             running = False
         # pygame.KEYDOWN
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
-                directionX = -1
-                moveX = True
-            elif event.key == pygame.K_RIGHT:
-                directionX = 1
-                moveX = True
-            elif event.key == pygame.K_DOWN:
-                directionY = 1
-                moveX = False
-            elif event.key == pygame.K_UP:
-                directionY = -1
-                moveX = False
+            if event.key == pygame.K_LEFT and direction != pygame.K_RIGHT and direction != pygame.K_LEFT:
+                direction = pygame.K_LEFT
+                list_positions.append([currentX+half_width, currentY+half_height])
+            elif event.key == pygame.K_RIGHT and direction != pygame.K_LEFT and direction != pygame.K_RIGHT:
+                direction = pygame.K_RIGHT
+                list_positions.append([currentX+half_width, currentY+half_height])
+            elif event.key == pygame.K_DOWN and direction != pygame.K_UP and direction != pygame.K_DOWN:
+                direction = pygame.K_DOWN
+                list_positions.append([currentX+half_width, currentY+half_height])
+            elif event.key == pygame.K_UP and direction != pygame.K_DOWN and direction != pygame.K_UP:
+                direction = pygame.K_UP
+                list_positions.append([currentX+half_width, currentY+half_height])
             elif event.key == pygame.K_SPACE:
                 start = False
 
     if not start and not game_over:
         # Move player
-        if moveX:
-            currentX = currentX + 3 * directionX
+        if direction == pygame.K_RIGHT:
+            currentX = currentX + 3
+        elif direction == pygame.K_LEFT:
+            currentX = currentX - 3
+        elif direction == pygame.K_DOWN:
+            currentY = currentY + 3
         else:
-            currentY = currentY + 3 * directionY
+            currentY = currentY - 3
 
     # Check borders
     if currentX > screen.get_width() - player_icon.get_width() or currentX < 0 or currentY > screen.get_height() - player_icon.get_height() or currentY < 0:
@@ -87,15 +93,19 @@ while running:
         y = (screen.get_height() - game_over_text.get_height()) / 2
         draw(game_over_text, x, y)
     else:
+        for i in range(len(list_positions)-1):
+            pygame.draw.line(screen, "orange",list_positions[i], list_positions[i+1], width=5)
+        pygame.draw.line(screen, "yellow", list_positions[-1], [currentX+half_width, currentY + half_height], width=5)
+
         # Display player
         draw(player_icon, currentX, currentY)
-        draw(icon_trail, currentX- player_icon.get_width(), currentY)
+
 
     # RENDER YOUR GAME HERE
 
     # flip() the display to put your work on screen
     pygame.display.flip()
 
-    clock.tick(50)  # limits FPS to 60
+    clock.tick(60)  # limits FPS to 60
 
 pygame.quit()
