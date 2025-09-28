@@ -38,11 +38,37 @@ currentY = startY
 trail_size = 4
 player_speed = 3.5 + screen.get_width() / 1500
 
-direction = pygame.K_LEFT
+
 half_height = player_icon.get_height() / 2
 half_width = player_icon.get_width() / 2
-list_positions = [[startX, startY+half_height]]
+direction = pygame.K_LEFT
+list_positions = [[startX, startY + half_height]]
 
+
+
+
+def is_colliding(_list_positions, rect_player):
+    for pos in range(len(_list_positions) - 3):
+        x1 = _list_positions[pos][0] if _list_positions[pos][0] <= _list_positions[pos + 1][0] else _list_positions[pos + 1][0]
+        y1 = _list_positions[pos][1] if _list_positions[pos][1] <= _list_positions[pos + 1][1] else _list_positions[pos + 1][1]
+        x2 = _list_positions[pos + 1][0] if _list_positions[pos][0] <= _list_positions[pos + 1][0] else _list_positions[pos][0]
+        y2 = _list_positions[pos + 1][1] if _list_positions[pos][1] <= _list_positions[pos + 1][1] else _list_positions[pos][1]
+
+        # Vertical line:
+        if x1 == x2:
+            # Check if player X is colliding:
+            if rect_player.x <= x1 <= rect_player.x + rect_player.width:
+                # Check if player top or bottom is colliding:
+                if y1 <= rect_player.y <= y2 or y1 <= rect_player.y + rect_player.height <= y2:
+                    return True
+        # Horizontal line:
+        if y1 == y2:
+            # Check if player Y is colliding:
+            if rect_player.y <= y1 <= rect_player.y + rect_player.height:
+                # Check if player right or left is colliding:
+                if x1 <= rect_player.x <= x2 or x1 <= rect_player.x + rect_player.width <= x2:
+                    return True
+    return False
 
 def draw(object_to_draw, _x, _y):
     screen.blit(object_to_draw, (_x, _y))
@@ -108,12 +134,18 @@ while running:
         x = (screen.get_width() - restart_text.get_width()) / 2
         draw(restart_text, x, y+game_over_text.get_height()+5)
     else:
-        for i in range(len(list_positions)-1):
-            pygame.draw.line(screen, "orange",list_positions[i], list_positions[i+1], width=trail_size)
-        pygame.draw.line(screen, "yellow", list_positions[-1], [currentX+half_width, currentY + half_height], width=trail_size)
+        if is_colliding(list_positions, pygame.Rect(currentX,currentY, player_icon.get_width(), player_icon.get_height())):
+            game_over = True
+        else:
+            if len(list_positions) > 1:
+                for i in range(len(list_positions)-3):
+                    pygame.draw.line(screen, "red",list_positions[i], list_positions[i+1], width=trail_size)
+                for i in range(len(list_positions)-3, len(list_positions)-1):
+                    pygame.draw.line(screen, "orange", list_positions[i], list_positions[i + 1], width=trail_size)
+            pygame.draw.line(screen, "yellow", list_positions[-1], [currentX+half_width, currentY + half_height], width=trail_size)
 
-        # Display player
-        draw(player_icon, currentX, currentY)
+            # Display player
+            draw(player_icon, currentX, currentY)
 
 
     # RENDER YOUR GAME HERE
