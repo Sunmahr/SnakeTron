@@ -9,7 +9,7 @@ my_font = pygame.font.SysFont('Noto Serif Bold', 100)
 game_over_text = my_font.render('GAME OVER', True, "red")
 start_text = my_font.render('Press space to start', True, "green")
 # Size of screen
-screen = pygame.display.set_mode((800, 600), pygame.RESIZABLE)
+screen = pygame.display.set_mode(flags=pygame.FULLSCREEN)
 # Clock for the refresh
 clock = pygame.time.Clock()
 # Set name of the window
@@ -19,22 +19,23 @@ icon = pygame.image.load('images/motorbike.png')
 # Set the player icon for the game
 player_icon = pygame.image.load('images/motorbike.png')
 player_icon2 = pygame.image.load('images/motorbike2.png')
-# The size of the player icon
-width = player_icon.get_rect().width
-height = player_icon.get_rect().height
-player_icon = pygame.transform.smoothscale(player_icon,(width/16.5,height/16.5))
+
+
+
 # Icon of the window
 pygame.display.set_icon(icon)
 # All Variables
 running = True
 game_over = False
 start = True
+player_size_ratio = 30000 / screen.get_width()
+player_icon = pygame.transform.smoothscale(player_icon,(player_icon.get_rect().width/player_size_ratio,player_icon.get_rect().height/player_size_ratio))
 startX = screen.get_width() - 50 - player_icon.get_width()
 startY = 50
 currentX = startX
 currentY = startY
 trail_size = 4
-player_speed = 3.5
+player_speed = 3.5 + screen.get_width() / 1500
 
 direction = pygame.K_LEFT
 half_height = player_icon.get_height() / 2
