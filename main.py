@@ -8,6 +8,7 @@ my_font = pygame.font.SysFont('Noto Serif Bold', 100)
 # Set the "game over text" and "start text"
 game_over_text = my_font.render('GAME OVER', True, "red")
 start_text = my_font.render('Press space to start', True, "green")
+restart_text = my_font.render('Press space to restart', True, "orange")
 # Size of screen
 screen = pygame.display.set_mode(flags=pygame.FULLSCREEN)
 # Clock for the refresh
@@ -68,6 +69,12 @@ while running:
                 list_positions.append([currentX+half_width, currentY+half_height])
             elif event.key == pygame.K_SPACE:
                 start = False
+                if game_over:
+                    game_over = False
+                    direction = pygame.K_LEFT
+                    list_positions = [[startX, startY + half_height]]
+                    currentX = startX
+                    currentY = startY
             elif event.key == pygame.K_ESCAPE:
                 running = False
 
@@ -98,6 +105,8 @@ while running:
         x = (screen.get_width() - game_over_text.get_width()) / 2
         y = (screen.get_height() - game_over_text.get_height()) / 2 
         draw(game_over_text, x, y)
+        x = (screen.get_width() - restart_text.get_width()) / 2
+        draw(restart_text, x, y+game_over_text.get_height()+5)
     else:
         for i in range(len(list_positions)-1):
             pygame.draw.line(screen, "orange",list_positions[i], list_positions[i+1], width=trail_size)
