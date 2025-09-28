@@ -18,10 +18,11 @@ pygame.display.set_caption("Snake Tron")
 icon = pygame.image.load('images/motorbike.png')
 # Set the player icon for the game
 player_icon = pygame.image.load('images/motorbike.png')
+player_icon2 = pygame.image.load('images/motorbike2.png')
 # The size of the player icon
 width = player_icon.get_rect().width
 height = player_icon.get_rect().height
-player_icon = pygame.transform.smoothscale(player_icon,(width/10,height/10))
+player_icon = pygame.transform.smoothscale(player_icon,(width/16.5,height/16.5))
 # Icon of the window
 pygame.display.set_icon(icon)
 # All Variables
@@ -32,6 +33,8 @@ startX = screen.get_width() - 50 - player_icon.get_width()
 startY = 50
 currentX = startX
 currentY = startY
+trail_size = 4
+player_speed = 3.5
 
 direction = pygame.K_LEFT
 half_height = player_icon.get_height() / 2
@@ -64,17 +67,19 @@ while running:
                 list_positions.append([currentX+half_width, currentY+half_height])
             elif event.key == pygame.K_SPACE:
                 start = False
+            elif event.key == pygame.K_ESCAPE:
+                running = False
 
     if not start and not game_over:
         # Move player
         if direction == pygame.K_RIGHT:
-            currentX = currentX + 3
+            currentX = currentX + player_speed
         elif direction == pygame.K_LEFT:
-            currentX = currentX - 3
+            currentX = currentX - player_speed
         elif direction == pygame.K_DOWN:
-            currentY = currentY + 3
+            currentY = currentY + player_speed
         else:
-            currentY = currentY - 3
+            currentY = currentY - player_speed
 
     # Check borders
     if currentX > screen.get_width() - player_icon.get_width() or currentX < 0 or currentY > screen.get_height() - player_icon.get_height() or currentY < 0:
@@ -90,12 +95,12 @@ while running:
         draw(start_text, x, y)
     elif game_over:
         x = (screen.get_width() - game_over_text.get_width()) / 2
-        y = (screen.get_height() - game_over_text.get_height()) / 2
+        y = (screen.get_height() - game_over_text.get_height()) / 2 
         draw(game_over_text, x, y)
     else:
         for i in range(len(list_positions)-1):
-            pygame.draw.line(screen, "orange",list_positions[i], list_positions[i+1], width=5)
-        pygame.draw.line(screen, "yellow", list_positions[-1], [currentX+half_width, currentY + half_height], width=5)
+            pygame.draw.line(screen, "orange",list_positions[i], list_positions[i+1], width=trail_size)
+        pygame.draw.line(screen, "yellow", list_positions[-1], [currentX+half_width, currentY + half_height], width=trail_size)
 
         # Display player
         draw(player_icon, currentX, currentY)
