@@ -1,8 +1,11 @@
 import pygame
 
-
 class Player:
-    def __init__(self, icon_path, icon_ratio, start_x, start_y, speed, initial_direction = pygame.K_LEFT, trail_size = 4, ):
+    def __init__(self, icon_path, icon_ratio, start_x, start_y, speed, initial_direction = "left", trail_size = 4, right = pygame.K_RIGHT, left = pygame.K_LEFT, up = pygame.K_UP, down = pygame.K_DOWN):
+        self.right = right
+        self.left = left
+        self.up = up
+        self.down = down
         self.current_y = None
         self.current_x = None
         self.positions = None
@@ -14,33 +17,41 @@ class Player:
         self.speed = speed
         self.initial_direction = initial_direction
         self.trail_size = trail_size
-        self.re_init()
         self.is_game_over = False
+        self.re_init()
 
     def mark_position(self):
         self.positions.append([self.current_x + self.icon.get_width() / 2, self.current_y + self.icon.get_height() / 2])
 
     def check_key(self, key):
-        if key in [pygame.K_LEFT, pygame.K_RIGHT] and self.direction not in [pygame.K_RIGHT, pygame.K_LEFT] \
-                or key in [pygame.K_UP, pygame.K_DOWN] and self.direction not in [pygame.K_UP, pygame.K_DOWN]:
+         if key in [self.left, self.right] and self.direction not in [self.right, self.left] \
+                or key in [self.up, self.down] and self.direction not in [self.up, self.down]:
             self.direction = key
             self.mark_position()
 
     def re_init(self):
-        self.direction = self.initial_direction
+        if self.initial_direction == "left":
+            self.direction = self.left
+        elif self.initial_direction == "right":
+            self.direction = self.right
+        elif self.initial_direction == "up":
+            self.direction = self.up
+        else:
+            self.direction = self.down
+
         self.positions = [[self.start_x + self.icon.get_width() / 2, self.start_y + self.icon.get_height() / 2]]
         self.current_x = self.start_x
         self.current_y = self.start_y
         self.is_game_over = False
 
     def move(self):
-        if self.direction == pygame.K_RIGHT:
+        if self.direction == self.right:
             self.current_x = self.current_x + self.speed
-        elif self.direction == pygame.K_LEFT:
+        elif self.direction == self.left:
             self.current_x = self.current_x - self.speed
-        elif self.direction == pygame.K_DOWN:
+        elif self.direction == self.down:
             self.current_y = self.current_y + self.speed
-        else:
+        elif self.direction == self.up:
             self.current_y = self.current_y - self.speed
 
     def rect(self):
@@ -63,12 +74,6 @@ clock = pygame.time.Clock()
 pygame.display.set_caption("Snake Tron")
 # Load the picture "mortorbike"
 icon = pygame.image.load('images/motorbike.png')
-# Set the player icon for the game
-player_icon2 = pygame.image.load('images/motorbike2.png')
-
-print(screen.get_width())
-print(screen.get_height())
-
 
 
 # Icon of the window
@@ -85,36 +90,43 @@ player1 = Player('images/motorbike.png'
                  , 50
                  , 3.5 + screen.get_width() / 1500)
 
+player2 = Player('images/motorbike2.png'
+                 , player_size_ratio
+                 , 50
+                 , 50
+                 , 3.5 + screen.get_width() / 1500
+                 , "right"
+                 , 4
+                 , right = pygame.K_d
+                 , left = pygame.K_q
+                 , up = pygame.K_z
+                 , down = pygame.K_s)
+
 
 def check_screen_limit(player):
     if not player.is_game_over:
         if player.current_x > screen.get_width() - player.icon.get_width() or player.current_x < 0 or player.current_y > screen.get_height() - player.icon.get_height() or player.current_y < 0:
             player.is_game_over = True
 
-def check_colliding(player):
-    if not player.is_game_over:
-        for pos in range(len(player.positions) - 3):
-            x1 = player.positions[pos][0] if player.positions[pos][0] <= player.positions[pos + 1][0] else player.positions[pos + 1][0]
-            y1 = player.positions[pos][1] if player.positions[pos][1] <= player.positions[pos + 1][1] else player.positions[pos + 1][1]
-            x2 = player.positions[pos + 1][0] if player.positions[pos][0] <= player.positions[pos + 1][0] else player.positions[pos][0]
-            y2 = player.positions[pos + 1][1] if player.positions[pos][1] <= player.positions[pos + 1][1] else player.positions[pos][1]
+def check_rect_colliding(rect_a, rect_b):
+    return rect_a.left <= rect_b.right and rect_a.right >= rect_b.left and rect_a.top <= rect_b.bottom and rect_a.bottom >= rect_b.top
 
+def check_trails_colliding(player_a, player_b, number_line_to_ignore = 1):
+    if not player_a.is_game_over and len(player_b.positions) > 1:
+        for pos in range(len(player_b.positions) - number_line_to_ignore):
+            x1 = player_b.positions[pos][0] if player_b.positions[pos][0] <= player_b.positions[pos + 1][0] else player_b.positions[pos + 1][0]
+            y1 = player_b.positions[pos][1] if player_b.positions[pos][1] <= player_b.positions[pos + 1][1] else player_b.positions[pos + 1][1]
+            x2 = player_b.positions[pos + 1][0] if player_b.positions[pos][0] <= player_b.positions[pos + 1][0] else player_b.positions[pos][0]
+            y2 = player_b.positions[pos + 1][1] if player_b.positions[pos][1] <= player_b.positions[pos + 1][1] else player_b.positions[pos][1]
+
+            rect_trail = pygame.Rect(x1, y1, x2-x1, player_b.trail_size)
             # Vertical line:
             if x1 == x2:
-                # Check if player X is colliding:
-                if player.rect().x <= x1 <= player.rect().x + player.rect().width:
-                    # Check if player top or bottom is colliding:
-                    if y1 <= player.rect().y <= y2 or y1 <= player.rect().y + player.rect().height <= y2:
-                        player.is_game_over = True
-                        break
-            # Horizontal line:
-            if y1 == y2:
-                # Check if player Y is colliding:
-                if player.rect().y <= y1 <= player.rect().y + player.rect().height:
-                    # Check if player right or left is colliding:
-                    if x1 <= player.rect().x <= x2 or x1 <= player.rect().x + player.rect().width <= x2:
-                        player.is_game_over = True
-                        break
+                rect_trail = pygame.Rect(x1, y1, player_b.trail_size, y2-y1)
+
+            if check_rect_colliding(player_a.rect(), rect_trail):
+                player_a.is_game_over = True
+                break
 
 def draw_trails(player, color1, color2, color3):
     if len(player.positions) > 1:
@@ -135,25 +147,34 @@ while running:
             running = False
         # pygame.KEYDOWN
         elif event.type == pygame.KEYDOWN:
-            if event.key in [pygame.K_RIGHT, pygame.K_LEFT, pygame.K_DOWN, pygame.K_UP]:
-                player1.check_key(event.key)
-            elif event.key == pygame.K_SPACE:
+            player1.check_key(event.key)
+            player2.check_key(event.key)
+            if event.key == pygame.K_SPACE:
                 start = False
                 if game_over:
                     game_over = False
                     player1.re_init()
+                    player2.re_init()
             elif event.key == pygame.K_ESCAPE:
                 running = False
 
     if not start and not game_over:
         # Move player
         player1.move()
+        player2.move()
 
     # Check borders
     check_screen_limit(player1)
-    check_colliding(player1)
+    check_screen_limit(player2)
+    if check_rect_colliding(player1.rect(), player2.rect()):
+        game_over = True
+    check_trails_colliding(player1, player2)
+    check_trails_colliding(player2, player1)
+    check_trails_colliding(player1, player1, 3)
+    check_trails_colliding(player2, player2, 3)
 
-    if player1.is_game_over:
+
+    if player1.is_game_over or player2.is_game_over:
         game_over = True
 
     # fill the screen with a color
@@ -170,9 +191,13 @@ while running:
         draw(restart_text, x, y+game_over_text.get_height()+5)
     else:
         draw_trails(player1,"red", "orange", "yellow")
+        draw_trails(player2, "darkblue", "cyan", "lightblue")
         # Display players
         if not player1.is_game_over:
             draw(player1.icon, player1.current_x, player1.current_y)
+
+        if not player2.is_game_over:
+            draw(player2.icon, player2.current_x, player2.current_y)
 
     # flip() (draw) the display
     pygame.display.flip()
